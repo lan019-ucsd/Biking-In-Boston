@@ -1,3 +1,4 @@
+/* Global */
 html,
 body {
   margin: 0;
@@ -18,28 +19,73 @@ p {
   margin-bottom: 1em;   /* optional: space below paragraph */
 }
 
+/* Header */
+
 header {
-  margin-top: 0;      /* Remove any top margin of header */
-  padding-top: 0;     /* Optional: remove top padding if any */
+    display: flex;
+    flex-wrap: nowrap; /* prevent wrapping */
+    align-items: center; /* align vertically */
+    gap: 0.5em;
+    padding: 0.5em;
+    width: 75 vw;
+    max-width: 1200px;
 }
 
-header h1 {
-  margin-top: 0;      /* Remove default top margin of h1 */
-  margin-bottom: 0.5em; /* Adjust spacing below h1 as needed */
-  font-size: 1.5rem;
+header h1 { 
+  font-size: clamp(1rem, 2vw, 1rem);
+  margin: 0;
+  min-width: 100px;
 }
 
+label {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex: 1 1 auto;    /* can grow but not shrink below min-width */
+    min-width: 100px;  /* prevents slider from collapsing */
+}
+
+#time-slider { 
+    width: 200px;      /* fixed width for slider */
+    max-width: 100%;   /* never overflow label */
+}
+
+#selected-time { 
+    margin-left: 0.5em;
+    margin-top: 0.25em;
+}
+
+#any-time { 
+  font-size: clamp(0.8rem, 1.5vw, 0.5em);
+  color: #777;
+  font-style: italic;
+  margin-left: auto;
+}
+
+#any-time { 
+    color: #777;
+    font-style: italic;
+}
+
+/* Map */
 @media (max-width: 600px) {
   header h1 {
     font-size: 1.5rem; /* smaller font on small screens */
+  }
+
+  #map { 
+    width: 95%;
+    height: 60vh;
   }
 }
 
 #map {
   width: 90%;
-  height: 600px;
+  height: 75vh;
+  max-height: 1000px;
+  min-height: 400px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  border-radius: 4px;
   position: relative;
 }
 
@@ -66,40 +112,4 @@ header h1 {
 
 #reset-circles:hover {
   background-color: #f0f0f0;
-}
-
-
-header { 
-    display: flex;
-    gap: 1em;
-    align-items: baseline;
-    padding: 0.5em 0.5em;
-}
-
-label { 
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-}
-
-#time-slider { 
-    width: 200px;
-    vertical-align: left;
-}
-
-#selected-time { 
-    margin-left: 0.5em;
-    margin-top: 0.25em;
-}
-
-#any-time { 
-  color: #777;
-  font-style: italic;
-  margin-left: auto;
-}
-
-#any-time { 
-    color: #777;
-    font-style: italic;
 }

@@ -226,7 +226,7 @@ map.on('load', async () => {
         const anyTime = document.getElementById('any-time');
 
         function updateScatterPlot(timeFilter) { 
-            const filteredTrips = filterTripsByTime(trips, timeFilter);
+            const filteredTrips = filterTripsbyTime(trips, timeFilter);
             const filteredStations = computeStationTraffic(stations, filteredTrips);
 
             timeFilter === -1 
@@ -235,7 +235,8 @@ map.on('load', async () => {
 
             circles
                 .data(filteredStations, (d) => d.short_name) // Ensure D3 tracks elements correctly
-                .join('circle')
+                .transition()
+                .duration(300)
                 .attr('r', (d) => radiusScale(d.totalTraffic));
         }
 
@@ -250,8 +251,14 @@ map.on('load', async () => {
             }
         }
 
-        timeSlider.addEventListener('input', (event) => updateTimeDisplay(event.target.value));
-        updateTimeDisplay(timeSlider.value);
+        timeSlider.addEventListener('input', (event) => { 
+            const timeFilter = +event.target.value;
+            updateTimeDisplay(timeFilter);
+            updateScatterPlot(timeFilter);
+        });
+
+        updateTimeDisplay(+timeSlider.value);
+        updateScatterPlot(+timeSlider.value);
 
         // Reset Button
         d3.select('#reset-circles').on('click', () => {
