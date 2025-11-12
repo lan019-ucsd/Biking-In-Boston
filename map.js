@@ -174,7 +174,7 @@ map.on('load', async () => {
                 d3.select(this)
                     .transition()
                     .duration(150)
-                    .style('fill', '#011D57')
+                    .style('fill', '#d63e3eff')
                     .attr('r', radiusScale(d.totalTraffic) * 1.3);
 
                 tooltip

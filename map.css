@@ -89,7 +89,7 @@ label {
   height: 75vh;
   max-height: 1000px;
   min-height: 400px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 8px rgba(106, 16, 16, 0.1);
   border-radius: 4px;
   position: relative;
 }
@@ -135,12 +135,17 @@ label {
   max-width: 1200px
 }
 
-.legend div { 
-  flex: 1;
-  text-align: center;
-  padding: 0.5em 0;
-  margin: 0 1px;
-  border-radius: 4px;
-  color: white;
-  font-size: clamp(0.7rem, 1.5vw, 1rem);
+.legend div {
+    flex: 1;
+    text-align: center;
+    padding: 0.5em 0;
+    margin: 0 1px;
+    border-radius: 4px;
+    color: white;
+    font-size: clamp(0.7rem, 1.5vw, 1rem);
+    background-color: color-mix(
+        in oklch,
+        var(--color-departures) calc(100% * var(--departure-ratio)),
+        var(--color-arrivals)
+    );
 }
