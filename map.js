@@ -182,12 +182,36 @@ map.on('load', async () => {
         map.on('resize', updatePositions); // Update on window resize
         map.on('moveend', updatePositions); // Final adjustment after movement ends
 
+        // Reset Button
         d3.select('#reset-circles').on('click', () => {
             circles.transition()
                 .duration(300)
                 .style('fill', d => d.originalColor)
                 .attr('r', d => radiusScale(d.totalTraffic));
         });
+
+        const timeSlider = document.getElementById('time-slider');
+        const selectedTime = document.getElementById('selected-time');
+        const anyTime = document.getElementById('any-time');
+
+        function formatTime(minutes) {
+            const date = new Date(0, 0, 0, 0, minutes); // Set hours & minutes
+            return date.toLocaleString('en-US', { timeStyle: 'short' }); // Format as HH:MM AM/PM
+        }
+
+        function updateTimeDisplay (value) { 
+            if (value === '-1') { 
+                selectedTime.style.display = 'none';
+                anyTime.style.display = 'block';
+            } else { 
+                selectedTime.textContent = formatTime(+value);
+                selectedTime.style.display = 'block';
+                anyTime.style.display = 'none';
+            }
+        }
+
+        timeSlider.addEventListener('input', (event) => updateTimeDisplay(event.target.value));
+        updateTimeDisplay(timeSlider.value);
 
     } catch (error) {
         console.error('Error loading:', error);

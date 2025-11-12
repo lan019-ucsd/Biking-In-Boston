@@ -78,16 +78,25 @@ header {
 
 label { 
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
 }
 
 #time-slider { 
     width: 200px;
-    vertical-align: middle;
+    vertical-align: left;
 }
 
-#selected-time, #any-time { 
-    display: block;
-    margin-top: 0.25;
+#selected-time { 
+    margin-left: 0.5em;
+    margin-top: 0.25em;
+}
+
+#any-time { 
+  color: #777;
+  font-style: italic;
+  margin-left: auto;
 }
 
 #any-time { 
