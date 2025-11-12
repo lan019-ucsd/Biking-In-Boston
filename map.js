@@ -224,6 +224,7 @@ map.on('load', async () => {
         const timeSlider = document.getElementById('time-slider');
         const selectedTime = document.getElementById('selected-time');
         const anyTime = document.getElementById('any-time');
+        const stationFlow = d3.scaleQuantize().domain([0, 1]).range([0, 0.5, 1]);
 
         function updateScatterPlot(timeFilter) { 
             const filteredTrips = filterTripsbyTime(trips, timeFilter);
@@ -237,7 +238,8 @@ map.on('load', async () => {
                 .data(filteredStations, (d) => d.short_name) // Ensure D3 tracks elements correctly
                 .transition()
                 .duration(300)
-                .attr('r', (d) => radiusScale(d.totalTraffic));
+                .attr('r', (d) => radiusScale(d.totalTraffic))
+                .style('--departure-ratio', (d) => stationFlow(d.departures / d.totalTraffic));
         }
 
         function updateTimeDisplay (value) { 
