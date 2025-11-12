@@ -81,7 +81,8 @@ map.on('load', async () => {
             .style('border-radius', '4px')
             .style('font-size', '12px')
             .style('pointer-events', 'none')
-            .style('opacity', 0);
+            .style('opacity', 0)
+            .style('z-index', 9999);
 
         function getCoords(station) {
             const point = new mapboxgl.LngLat(+station.lon, +station.lat); // Convert lon/lat to Mapbox LngLat
@@ -128,14 +129,40 @@ map.on('load', async () => {
             .attr('stroke-width', 1) // Circle border thickness
             .attr('opacity', 0.8) // Circle opacity
             .attr('r', (d) => radiusScale(d.totalTraffic)) // Radius of the circle
-            .each(function (d) {
-            // Add <title> for browser tooltips
+            .style('pointer-events', 'all') // enable hover events
+
+            .on('mouseover', function (event, d) {
                 d3.select(this)
-                  .transition()
-                  .duration(150)
-                  
-            );
-        });
+                    .transition()
+                    .duration(150)
+                    .attr('fill', 'darkorange')
+                    .attr('r', radiusScale(d.totalTraffic) * 1.3);
+
+                tooltip
+                    .style('opacity', 1)
+                    .html(
+                    `<strong>${d.name}</strong><br>
+                    ${d.totalTraffic} total trips<br>
+                    🚲 ${d.departures} departures<br>
+                    🏁 ${d.arrivals} arrivals`
+                    );
+            })
+  
+            .on('mousemove', function (event) {
+                tooltip
+                .style('left', event.pageX + 10 + 'px')
+                .style('top', event.pageY - 28 + 'px');
+            })
+  
+            .on('mouseout', function (event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(150)
+                    .attr('fill', 'steelblue')
+                    .attr('r', radiusScale(d.totalTraffic));
+
+                tooltip.style('opacity', 0);
+            });
 
         // Function to update circle positions when the map moves/zooms
         function updatePositions() {
