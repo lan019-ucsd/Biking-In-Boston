@@ -56,7 +56,6 @@ map.on('load', async () => {
     });
 
     /* Bike Station */
-    let jsonData;
     
     try {
         const jsonData = await d3.json('https://dsc106.com/labs/lab07/data/bluebikes-stations.json');
@@ -64,7 +63,8 @@ map.on('load', async () => {
         console.log('Stations Array:', stations);
 
         const svg = d3
-            .select('#map').append('svg')
+            .select('#map')
+            .append('svg')
             .style('position', 'absolute')
             .style('z-index', 10)
             .style('width', '100%')
@@ -75,7 +75,7 @@ map.on('load', async () => {
             .select('body')
             .append('div')
             .style('position', 'absolute')
-            .style('background', 'rgba(0,0,0,0.7)')
+            .style('background', 'rgba(49, 19, 19, 0.7)')
             .style('color', 'white')
             .style('padding', '4px 8px')
             .style('border-radius', '4px')
@@ -124,7 +124,7 @@ map.on('load', async () => {
             .data(stations)
             .enter()
             .append('circle')
-            .attr('fill', 'steelblue') // Circle fill color
+            .attr('fill', '#B00C0C') // Circle fill color
             .attr('stroke', 'white') // Circle border color
             .attr('stroke-width', 1) // Circle border thickness
             .attr('opacity', 0.8) // Circle opacity
@@ -135,33 +135,35 @@ map.on('load', async () => {
                 d3.select(this)
                     .transition()
                     .duration(150)
-                    .attr('fill', 'darkorange')
+                    .style('fill', '#011D57')
                     .attr('r', radiusScale(d.totalTraffic) * 1.3);
 
                 tooltip
                     .style('opacity', 1)
                     .html(
                     `<strong>${d.name}</strong><br>
-                    ${d.totalTraffic} total trips<br>
+                    ${d.totalTraffic} total trips: <br>
                     🚲 ${d.departures} departures<br>
                     🏁 ${d.arrivals} arrivals`
                     );
-            })
-  
-            .on('mousemove', function (event) {
-                tooltip
-                .style('left', event.pageX + 10 + 'px')
-                .style('top', event.pageY - 28 + 'px');
+
+                 d3.select(this).on('mousemove.tooltip', function(event) {
+                    tooltip
+                        .style('left', event.pageX + 10 + 'px')
+                        .style('top', event.pageY - 28 + 'px');
+                });
             })
   
             .on('mouseout', function (event, d) {
                 d3.select(this)
                     .transition()
                     .duration(150)
-                    .attr('fill', 'steelblue')
+                    .style('fill', '#B00C0C')
                     .attr('r', radiusScale(d.totalTraffic));
 
                 tooltip.style('opacity', 0);
+
+                d3.select(this).on('mousemove.tooltip', null);
             });
 
         // Function to update circle positions when the map moves/zooms
@@ -179,6 +181,13 @@ map.on('load', async () => {
         map.on('zoom', updatePositions); // Update during zooming
         map.on('resize', updatePositions); // Update on window resize
         map.on('moveend', updatePositions); // Final adjustment after movement ends
+
+        d3.select('#reset-circles').on('click', () => {
+            circles.transition()
+                .duration(300)
+                .style('fill', d => d.originalColor)
+                .attr('r', d => radiusScale(d.totalTraffic));
+        });
 
     } catch (error) {
         console.error('Error loading:', error);
