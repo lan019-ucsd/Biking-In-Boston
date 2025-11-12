@@ -6,6 +6,55 @@ console.log('Mapbox GL JS Loaded:', mapboxgl);
 
 mapboxgl.accessToken = 'pk.eyJ1IjoibGFuMDE5IiwiYSI6ImNtaHR1a2JqODF3cGQyanBqZWswbGdiYTUifQ.TvJAT73RHKnClFO4WohpIw';
 
+/* Global Functions */
+function computeStationTraffic(stations, trips) { 
+    const departures = d3.rollup(
+        trips,
+        (v) => v.length,
+        (d) => d.start_station_id,
+    );
+
+    const arrivals = d3.rollup(
+        trips,
+        (v) => v.length,
+        (d) => d.end_station_id,
+    );
+
+    return stations.map((station) => {
+        const id = station.short_name;
+        station.arrivals = arrivals.get(id) ?? 0;
+        station.departures = departures.get(id) ?? 0;
+        station.totalTraffic = station.arrivals + station.departures
+        return station;
+    });
+}
+
+function minutesSinceMidnight(date) {
+  return date.getHours() * 60 + date.getMinutes();
+}
+
+function filterTripsbyTime(trips, timeFilter) {
+  return timeFilter === -1
+    ? trips // If no filter is applied (-1), return all trips
+    : trips.filter((trip) => {
+        // Convert trip start and end times to minutes since midnight
+        const startedMinutes = minutesSinceMidnight(trip.started_at);
+        const endedMinutes = minutesSinceMidnight(trip.ended_at);
+
+        // Include trips that started or ended within 60 minutes of the selected time
+        return (
+          Math.abs(startedMinutes - timeFilter) <= 60 ||
+          Math.abs(endedMinutes - timeFilter) <= 60
+        );
+      });
+}
+
+function formatTime(minutes) {
+    const date = new Date(0, 0, 0, 0, minutes); // Set hours & minutes
+    return date.toLocaleString('en-US', { timeStyle: 'short' }); // Format as HH:MM AM/PM
+}
+
+
 // Initialize the map
 const map = new mapboxgl.Map({
   container: 'map', // ID of the div where the map will render
@@ -62,6 +111,19 @@ map.on('load', async () => {
         let stations = jsonData.data.stations;
         console.log('Stations Array:', stations);
 
+        const trips = await d3.csv(
+            'https://dsc106.com/labs/lab07/data/bluebikes-traffic-2024-03.csv',
+            (trip) => {
+                trip.started_at = new Date(trip.started_at);
+                trip.ended_at = new Date(trip.ended_at);
+                return trip;
+            }
+        );
+
+        console.log('Loaded Trips:', trips.length);
+
+        stations = computeStationTraffic(stations, trips);
+
         const svg = d3
             .select('#map')
             .append('svg')
@@ -84,39 +146,16 @@ map.on('load', async () => {
             .style('opacity', 0)
             .style('z-index', 9999);
 
+        const radiusScale = d3
+            .scaleSqrt()
+            .domain([0, d3.max(stations, (d) => d.totalTraffic)])
+            .range([0, 25]);
+
         function getCoords(station) {
             const point = new mapboxgl.LngLat(+station.lon, +station.lat); // Convert lon/lat to Mapbox LngLat
             const { x, y } = map.project(point); // Project to pixel coordinates
             return { cx: x, cy: y }; // Return as object for use in SVG attributes
         }
-
-        const trips = await d3.csv('https://dsc106.com/labs/lab07/data/bluebikes-traffic-2024-03.csv');
-        console.log('Loaded trips:', trips.length);
-
-        const departures = d3.rollup(
-            trips,
-            (v) => v.length,
-            (d) => d.start_station_id,
-        );
-
-        const arrivals = d3.rollup(
-            trips,
-            (v) => v.length,
-            (d) => d.end_station_id,
-        );
-
-        stations = stations.map((station) => {
-            const id = station.short_name;
-            station.arrivals = arrivals.get(id) ?? 0;
-            station.departures = departures.get(id) ?? 0;
-            station.totalTraffic = station.arrivals + station.departures
-            return station;
-        });
-
-        const radiusScale = d3
-            .scaleSqrt()
-            .domain([0, d3.max(stations, (d) => d.totalTraffic)])
-            .range([0, 25]);
 
         // Append circles to the SVG for each station
         const circles = svg
@@ -182,21 +221,22 @@ map.on('load', async () => {
         map.on('resize', updatePositions); // Update on window resize
         map.on('moveend', updatePositions); // Final adjustment after movement ends
 
-        // Reset Button
-        d3.select('#reset-circles').on('click', () => {
-            circles.transition()
-                .duration(300)
-                .style('fill', d => d.originalColor)
-                .attr('r', d => radiusScale(d.totalTraffic));
-        });
-
         const timeSlider = document.getElementById('time-slider');
         const selectedTime = document.getElementById('selected-time');
         const anyTime = document.getElementById('any-time');
 
-        function formatTime(minutes) {
-            const date = new Date(0, 0, 0, 0, minutes); // Set hours & minutes
-            return date.toLocaleString('en-US', { timeStyle: 'short' }); // Format as HH:MM AM/PM
+        function updateScatterPlot(timeFilter) { 
+            const filteredTrips = filterTripsByTime(trips, timeFilter);
+            const filteredStations = computeStationTraffic(stations, filteredTrips);
+
+            timeFilter === -1 
+                ? radiusScale.range([0, 25])
+                : radiusScale.range([3, 50]);
+
+            circles
+                .data(filteredStations, (d) => d.short_name) // Ensure D3 tracks elements correctly
+                .join('circle')
+                .attr('r', (d) => radiusScale(d.totalTraffic));
         }
 
         function updateTimeDisplay (value) { 
@@ -212,6 +252,14 @@ map.on('load', async () => {
 
         timeSlider.addEventListener('input', (event) => updateTimeDisplay(event.target.value));
         updateTimeDisplay(timeSlider.value);
+
+        // Reset Button
+        d3.select('#reset-circles').on('click', () => {
+            circles.transition()
+                .duration(300)
+                .style('fill', d => d.originalColor)
+                .attr('r', d => radiusScale(d.totalTraffic));
+        });
 
     } catch (error) {
         console.error('Error loading:', error);
