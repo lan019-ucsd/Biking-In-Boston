@@ -242,8 +242,10 @@ map.on('load', async () => {
                 .style('--departure-ratio', (d) => stationFlow(d.departures / d.totalTraffic));
         }
 
+        timeSlider.value = -1; 
+        
         function updateTimeDisplay (value) { 
-            if (value === '-1') { 
+            if (value === -1) { 
                 selectedTime.style.display = 'none';
                 anyTime.style.display = 'block';
             } else { 
