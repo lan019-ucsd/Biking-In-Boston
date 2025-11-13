@@ -238,8 +238,9 @@ map.on('load', async () => {
             .data(filteredStations, (d) => d.short_name)
             .transition()
             .duration(300)
-            .attr('r', (d) => radiusScale(d.totalTraffic));
-        }
+            .attr('r', (d) => radiusScale(d.totalTraffic))
+            .style('--departure-ratio', (d) =>
+                stationFlow(d.departures / d.totalTraffic))
 
         function updateTimeDisplay(value) { 
             if (value === -1) { 
