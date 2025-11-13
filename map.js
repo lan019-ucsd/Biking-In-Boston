@@ -239,8 +239,9 @@ map.on('load', async () => {
             .transition()
             .duration(300)
             .attr('r', (d) => radiusScale(d.totalTraffic))
-            .style('--departure-ratio', (d) =>
-                stationFlow(d.departures / d.totalTraffic))
+            .style('--departure-ratio', (d) => 
+                stationFlow(d.departures / d.totalTraffic));
+        }
 
         function updateTimeDisplay(value) { 
             if (value === -1) { 
