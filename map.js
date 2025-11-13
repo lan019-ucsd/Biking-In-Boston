@@ -230,35 +230,32 @@ map.on('load', async () => {
             const filteredTrips = filterTripsbyTime(trips, timeFilter);
             const filteredStations = computeStationTraffic(stations, filteredTrips);
 
-            timeFilter === -1 
-                ? radiusScale.range([0, 25])
-                : radiusScale.range([3, 50]);
+        timeFilter === -1 
+        ? radiusScale.range([0, 25])
+        : radiusScale.range([3, 50]);
 
-            circles
-                .data(filteredStations, (d) => d.short_name) // Ensure D3 tracks elements correctly
-                .transition()
-                .duration(300)
-                .attr('r', (d) => radiusScale(d.totalTraffic))
-                .style('--departure-ratio', (d) => stationFlow(d.departures / d.totalTraffic));
+        circles
+            .data(filteredStations, (d) => d.short_name)
+            .transition()
+            .duration(300)
+            .attr('r', (d) => radiusScale(d.totalTraffic));
         }
 
-        timeSlider.value = -1; 
-        
-        function updateTimeDisplay (value) { 
+        function updateTimeDisplay(value) { 
             if (value === -1) { 
                 selectedTime.style.display = 'none';
                 anyTime.style.display = 'block';
             } else { 
-                selectedTime.textContent = formatTime(+value);
+                selectedTime.textContent = formatTime(value);
                 selectedTime.style.display = 'block';
                 anyTime.style.display = 'none';
             }
         }
 
-        timeSlider.addEventListener('input', (event) => { 
-            const timeFilter = +event.target.value;
-            updateTimeDisplay(timeFilter);
-            updateScatterPlot(timeFilter);
+        timeSlider.addEventListener('input', (event) => {
+        const timeFilter = +event.target.value;
+        updateTimeDisplay(timeFilter);
+        updateScatterPlot(timeFilter);
         });
 
         updateTimeDisplay(+timeSlider.value);
@@ -275,6 +272,5 @@ map.on('load', async () => {
     } catch (error) {
         console.error('Error loading:', error);
     }
-
 });
 
